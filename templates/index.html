@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>湿热强度等级评估系统</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" >
+  <style>
+    .form-group {
+      margin-bottom: 2rem;
+    }
+
+    label {
+      font-weight: bold;
+    }
+    span{
+        font-weight: bold;
+    }
+
+    input[type="number"] {
+      width: 100%;
+    }
+
+    button[type="submit"] {
+      width: 10%;
+      margin-right: 50px;
+    }
+    .form-group label{
+        width: 20vw;
+        display: inline-block;
+    }
+    .form-group input{
+        width: 50vw;
+        display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4">湿热强度等级评估系统</h1>
+    <form id="evaluation-form">
+      {% csrf_token %}
+        <div class="form-group">
+            <label for="title">影响因子</label>
+            <span>分数</span>
+          </div>
+      <div class="form-group">
+        <label for="hotWaterFlow">热水涌出量(L/h)</label>
+        <input type="number" class="form-control" id="hotWaterFlow" name="hotWaterFlow" min="0" max="9999">
+      </div>
+      <div class="form-group">
+        <label for="hotWaterTemperature">热水涌出温度 (℃)</label>
+        <input type="number" class="form-control" id="hotWaterTemperature" name="hotWaterTemperature" min="0" max="999">
+      </div>
+      <div class="form-group">
+        <label for="rockTemperature">高温围岩温度(℃)</label>
+        <input type="number" class="form-control" id="rockTemperature" name="rockTemperature" min="0" max="999">
+      </div>
+      <div class="form-group">
+        <label for="temperature">温度（℃）</label>
+        <input type="number" class="form-control" id="temperature" name="temperature" min="0" max="999">
+      </div>
+      <div class="form-group">
+        <label for="humidity">湿度（％）</label>
+        <input type="number" class="form-control" id="humidity" name="humidity" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label for="rockLength">高温围岩长度（m）</label>
+        <input type="number" class="form-control" id="rockLength" name="rockLength" min="0" max="999">
+      </div>
+      <div class="form-group">
+        <label for="waterDuration">热水涌出时长（h）</label>
+        <input type="number" class="form-control" id="waterDuration" name="waterDuration" min="0" max="999">
+      </div>
+      <button type="submit" class="btn btn-primary">提交</button>
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        查看评估结果
+      </button>
+    </form>
+  </div>
+  
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">评估结果</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="result-card">
+            <div class="result-item">
+              <div class="result-label">湿热强度总分</div>
+              <div class="result-value" id = 'score'></div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">湿度强度等级</div>
+              <div class="result-value" id="level"></div>
+            </div>
+          </div>
+          <iframe id="result" src="" width="1125" height="625"></iframe>
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" ></script>
+
+  <script>
+    $(document).ready(function() {
+      // 表单提交事件处理
+      $("#evaluation-form").submit(function(event) {
+        // 阻止表单默认提交行为
+        event.preventDefault();
+
+        // 获取表单数据
+        var formData = $(this).serialize();
+
+        // 发起 Ajax 请求
+        $.ajax({
+          type: "POST",
+          url: "/calculate/",
+          data: formData,
+          success: function(response) {
+            // 提交成功后设置 iframe 的 src 属性
+            $("#result").attr("src", "/chart");
+            $("#score").text(response.score)
+            $("#level").text(response.level)
+            alert("提交成功，点击查看结果")
+          },
+          error: function(xhr, status, error) {
+            console.error("Error:", error);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
